@@ -62,7 +62,7 @@ def qfib(n):
         i += 1
     return cur
 
-def qfib2(n):   #really not quick
+def qfib2(n):   #another qfib, use combined assignment
     i = 0
     a, b = 0, 1
     while i < n:
