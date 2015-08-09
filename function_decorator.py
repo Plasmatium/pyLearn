@@ -62,3 +62,10 @@ def qfib(n):
         i += 1
     return cur
 
+def qfib2(n):   #really not quick
+    i = 0
+    a, b = 0, 1
+    while i < n:
+    	a, b = b, a+b
+    	i += 1
+    return b
