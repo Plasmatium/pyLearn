@@ -21,8 +21,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #-------------------------------------------------------------------------
 
-from imp import reload
-
 def memoize(f):
     cache = {}
 
@@ -31,7 +29,6 @@ def memoize(f):
             cache[x] = f(x)
         return cache[x]
     return helper
-
 
 def trace(f):
     def helper(x):
