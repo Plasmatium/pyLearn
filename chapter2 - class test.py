@@ -3,6 +3,7 @@
 
 def static_variables(f):
     svar_table = {}
+    #init svar_table defined in specified class
     if 'inited' not in svar_table:
         svar_table = dict(f(None))
         svar_table['inited'] = None
