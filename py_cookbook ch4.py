@@ -1,4 +1,4 @@
-﻿# python cookbook chapter 4
+# python cookbook chapter 4
 from random import random
 
 def frange(start, stop, increment):
