@@ -1,7 +1,13 @@
 # sicp chapter2 ---- class test
 # 15-8-14 0:08
+# 15-8-24 20:46
+
 
 def static_variables(f):
+    """
+    there is unnessery to use this trick
+    always use type(aClass).val to access 
+    """
     svar_table = {}
     #init svar_table defined in specified class
     if 'inited' not in svar_table:
@@ -28,6 +34,15 @@ class Account(object):
             'interest': 0.02
             }
         return stab
+
+    st = {'interest': 0.02, 'int2': 0.03}
+    def cs(self, key, val):
+        #Account.st[key] = val
+        type(self).st[key] = val
+
+a = Account('Tim')
+b = Account('Tom')
+c = Account('Tem')
 
 def bind_method(value, instance):
     """Return a bound method if value is callable, or value otherwise."""

@@ -21,6 +21,16 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 #-------------------------------------------------------------------------
 
+"""
+#-------------------------------------------------------------------------
+# 15-8-24 21:15 added by Jonny - Plasmatium
+# dec is a decorator that makes clousure avoid "local variable 's' 
+# referenced before assignment"
+# see doc of dec()
+#
+#-------------------------------------------------------------------------
+"""
+
 def memoize(f):
     cache = {}
 
@@ -66,3 +76,33 @@ def qfib2(n):   #another qfib, use combined assignment
     	a, b = b, a+b
     	i += 1
     return b
+
+def yfib():
+    """
+    yield virson of fib
+    """
+    a = b = 1
+    yield a
+    yield b
+    while True:
+        a, b = b, a+b
+        yield b
+
+def dec(f):
+    """
+    if use the def below, it won't work: "local variable 's' referenced before assignment"
+    def dec(f):
+         s = 0
+         def w(x):
+             s += f(x)
+             return s
+         return w
+    """
+    s = [0]
+    def w(x):
+        if x == 'reset':
+            s[0] = 0
+            return
+        s[0] += f(x)
+        return s[0]
+    return w
