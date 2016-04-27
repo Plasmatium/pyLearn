@@ -3,13 +3,14 @@
 from weakref import WeakKeyDictionary
 from IPython.core.debugger import Tracer; set_trace = Tracer(colors='linux')
 
-#normal descriptor
+#normal descriptor, callbacks & asserts must be the copy of []
 class Desc(object):
 	def __init__(self, default=None, callbacks=[], asserts=[]):
 		self.default = default
-		self.callbacks = callbacks
-		self.asserts = asserts
+		self.callbacks = callbacks.copy()
+		self.asserts = asserts.copy()
 		self.data = WeakKeyDictionary()
+		print(id(self), id(self.asserts), id(self.data))
 
 	def __get__(self, instance, owner):
 		if instance:
@@ -32,12 +33,22 @@ class Desc(object):
 
 		self.data[instance] = value
 
+	'''
+		usage: 
+			Test.x.add_callback(lambda the_desc, instance, value: value>5)
+		or:
+			@Test.x.add_callback
+			def func(the_desc, instance, value):
+				return value > 5
+	'''
 	def add_callback(self, func):
 		self.callbacks.append(func)
+		return func
 
 	def add_assert(self, func):
-		#assert func is function
+		assert(callable(func))
 		self.asserts.append(func)
+		return func
 
 
 #test class
