@@ -1,9 +1,36 @@
 #!/usr/bin/env python3.5
+# Decrepted. Use afs | afs.py instead
+# This script just for test
+
+'''
+import argparse
+
+parser = argparse.ArgumentParser()
+group = parser.add_mutually_exclusive_group()
+group.add_argument("-v", "--verbose", action="store_true")
+group.add_argument("-q", "--quiet", default=1)
+parser.add_argument("x", type=int, help="the base")
+parser.add_argument("y", type=int, help="the exponent")
+args = parser.parse_args()
+answer = args.x**args.y
+
+if args.quiet:
+    print(answer)
+
+if args.verbose:
+    print("{} to the power {} equals {}".format(args.x, args.y, answer))
+else:
+    print("{}^{} == {}".format(args.x, args.y, answer))
+
+'''
 
 from pathlib import Path
 import pickle as pk
 import sys
 import os
+import argparse
+
+parser = argparse.ArgumentParser(description='Andvanced file seeker')
 
 argv = sys.argv
 search_root = ''
