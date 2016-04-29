@@ -31,6 +31,8 @@
 #-------------------------------------------------------------------------
 """
 
+from IPython.core.debugger import Tracer; set_trace = Tracer(colors='linux')
+
 def memoize(f):
     cache = {}
 
@@ -106,3 +108,36 @@ def dec(f):
         s[0] += f(x)
         return s[0]
     return w
+
+class exp_on_next(object):
+    def __init__(self, exp):
+        self.exp = exp
+    def __iter__(self):
+        return self
+    def __next__(self):
+        try:
+            n = self.gen.__next__()
+            return n
+        except self.exp as e:
+            set_trace()
+            return e
+        except StopIteration as e:
+            raise e
+    def __call__(self, gen):
+        self.gen = gen
+        return self
+
+def g(r):
+    for x in range(r):
+        if x==5:
+            yield 1/0
+        else:
+            yield x
+
+a = g(10)
+b = exp_on_next(ZeroDivisionError)(a)
+for x in b: print(x)
+
+'''
+http://stackoverflow.com/questions/11366064/handle-an-exception-thrown-in-a-generator
+'''

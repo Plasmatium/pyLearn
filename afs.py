@@ -38,9 +38,21 @@ parser = argparse.ArgumentParser(description='Andvanced file seeker')
 parser.add_argument('-p', '--pattern', nargs='?', help='pattern will be used to seek')
 parser.add_argument('-d', '--direction', nargs='?', help='direction will be seeked')
 parser.add_argument('-c', '--cmd', type=str, nargs='+', help='run command as followed this option flag. {^number} indecates the file number seeked out before')
+parser.add_argument('-r', '--reproduct', action='store_true', help='reproduct the result seeked before')
 
 args = parser.parse_args()
-logpath = Path('/tmp/asf.pypk')
+
+#process
+
+in_windows = sys.platform.lower().startswith('win')
+if in_windows:
+	Path.path = property(fget=lambda self: Path.absolute(self).as_posix())
+	placeholder = '#'
+else:
+	placeholder = '^'
+tmpdir = os.environ['temp']
+logpath = Path(tmpdir) / 'asf.pypk'
+
 
 def seek():
 	if args.direction and args.pattern: #-p XXX -d XXX
@@ -49,7 +61,7 @@ def seek():
 		print('Error: missing pattern. -d %s ignored'%args.direction)
 		return
 	elif args.pattern: #only -p XXX
-		pathroot = Path('/')
+		pathroot = Path('./')
 	else:# -p & -d both none
 		return
 
@@ -66,46 +78,46 @@ def seek():
 	def process(fn):
 		nonlocal counter
 		rslt.append(fn.path)
+		print('\t\t', str(counter), fn)
 		counter += 1
-		print('\t'+str(counter)+'\t\t',fn)
 
 	def dump_log():		
 		with open(logpath.path, 'wb') as f:
 			pk.dump(rslt, f)
 
-	for fn in files:
-		process(fn)
-		if counter >= 100:
+	def hint100_and_dump():
+		if hint100_and_dump.__dict__!={}:
+			return
+		answer = input('Found more than 100 files, would you like to continue?\n[C/c/Y/y or about for any_other_key]')
+		if answer not in ('y', 'Y', 'c', 'C'):
+			print('Aborted by user!')
+			dump_log()
+			exit(0)
+		hint100_and_dump.hinted = True
+
+	fn = None
+	while True:
+		try:
+			fn = next(files)
+		except StopIteration:
 			break
-
-	# if there is 101# file, show it after prompt if exists or exit
-	try:
-		fn = next(files)
-	except StopIteration:
-		if counter==0:
-			print('Nothing found there!')
-		dump_log()
-		exit(0)
-
-	answer = input('Found more than 100 files, would you like to continue?\n[C/c/Y/y or about for any_other_key]')
-	if answer not in ('y', 'Y', 'c', 'C'):
-		print('Aborted by user!')
-		dump_log()
-		exit(0)
-
-	print('\t'+str(counter)+'\t\t',fn)
-	counter += 1
-	rslt.append(fn.path)
-	# the rest of files after 100
-	for fn in files:
+		except PermissionError as e:
+			print(e)
+			continue
+		except KeyboardInterrupt as e:
+			print(e)
+			dump_log()
+			exit(1)
 		process(fn)
+		if counter > 100:
+			hint100_and_dump()
 	dump_log()
+
 
 ##########################################################
 def run_cmd():
 	if args.cmd == None:
 		exit(0)
-	print(type(args.cmd))
 	if type(args.cmd) == str:
 		args.cmd = args.cmd.split(' ')
 		print(args.cmd)
@@ -117,17 +129,30 @@ def run_cmd():
 
 	num = None
 	command = ' '.join(args.cmd)
+	#set_trace()
 	for arg in args.cmd:
-		if '^' not in arg:
+		if placeholder not in arg:
 			continue
 		try:
-			num = int(arg.replace('^', ''))-1
+			num = int(arg.replace(placeholder, ''))
 			command = command.replace(arg, filelist[num])
 		except ValueError:
 			print('File number must be interger!')
 			exit(-1)
-	print(command)
+	import subprocess
+	subprocess.Popen(command)
+
+def reproduct():
+	if not args.reproduct:
+		return
+	counter = 0
+	with open(logpath.path, 'rb') as f:
+		filelist = pk.load(f)
+	for fn in filelist:
+		print('\t\t', str(counter), fn)
+		counter += 1
 
 if __name__ == '__main__':
+	reproduct()
 	seek()
 	run_cmd()
