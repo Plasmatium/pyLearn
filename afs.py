@@ -46,12 +46,13 @@ args = parser.parse_args()
 
 in_windows = sys.platform.lower().startswith('win')
 if in_windows:
-	Path.path = property(fget=lambda self: Path.absolute(self).as_posix())
+	Path.abspath = property(fget=lambda self: Path.absolute(self).as_posix())
 	placeholder = '#'
 else:
+	Path.abspath = property(fget=lambda self: Path.absolute(self).path)
 	placeholder = '^'
-tmpdir = os.environ['temp']
-logpath = Path(tmpdir) / 'asf.pypk'
+tmpdir = in_windows and os.environ['temp'] or '/tmp'
+logpath = Path(tmpdir) / '.asf.pypk'
 
 
 def seek():
@@ -77,7 +78,7 @@ def seek():
 
 	def process(fn):
 		nonlocal counter
-		rslt.append(fn.path)
+		rslt.append(fn.abspath)
 		print('\t\t', str(counter), fn)
 		counter += 1
 
@@ -135,7 +136,11 @@ def run_cmd():
 			continue
 		try:
 			num = int(arg.replace(placeholder, ''))
-			command = command.replace(arg, filelist[num])
+			set_trace()
+			filename = filelist[num]
+			filename = in_windows and filename or filename.replace(' ', '\x5c ')
+			print(filename)
+			command = command.replace(arg, filename)
 		except ValueError:
 			print('File number must be interger!')
 			exit(-1)
@@ -146,8 +151,12 @@ def reproduct():
 	if not args.reproduct:
 		return
 	counter = 0
-	with open(logpath.path, 'rb') as f:
-		filelist = pk.load(f)
+	try:
+		with open(logpath.path, 'rb') as f:
+			filelist = pk.load(f)
+	except FileNotFoundError:
+		print('log file not found')
+		exit(1)
 	for fn in filelist:
 		print('\t\t', str(counter), fn)
 		counter += 1
